@@ -15,7 +15,7 @@ from .constants import (
     ScreenGeometry, WindowGeometry, appname, get_boss, wakeup
 )
 from .fast_data_types import (
-    BLIT_PROGRAM, CELL_BG_PROGRAM, CELL_FG_PROGRAM, CELL_PROGRAM,
+    BLIT_PROGRAM, BOLD, CELL_BG_PROGRAM, CELL_FG_PROGRAM, CELL_PROGRAM,
     CELL_SPECIAL_PROGRAM, CSI, DCS, DECORATION, DIM,
     GRAPHICS_ALPHA_MASK_PROGRAM, GRAPHICS_PREMULT_PROGRAM, GRAPHICS_PROGRAM,
     OSC, REVERSE, SCROLL_FULL, SCROLL_LINE, SCROLL_PAGE, STRIKETHROUGH, Screen,
@@ -71,6 +71,7 @@ def load_shader_programs(semi_transparent=False):
     }.items():
         vv, ff = v.replace('WHICH_PROGRAM', which), f.replace('WHICH_PROGRAM', which)
         for gln, pyn in {
+                'BOLD_SHIFT': BOLD,
                 'REVERSE_SHIFT': REVERSE,
                 'STRIKE_SHIFT': STRIKETHROUGH,
                 'DIM_SHIFT': DIM,
@@ -83,6 +84,8 @@ def load_shader_programs(semi_transparent=False):
         if not load_shader_programs.use_selection_fg:
             vv = vv.replace('#define USE_SELECTION_FG', '#define DONT_USE_SELECTION_FG')
             ff = ff.replace('#define USE_SELECTION_FG', '#define DONT_USE_SELECTION_FG')
+        if load_shader_programs.bold_is_bright:
+            vv = vv.replace('#define NOT_BOLD_IS_BRIGHT', '#define BOLD_IS_BRIGHT')
         compile_program(p, vv, ff)
     v, f = load_shaders('graphics')
     for which, p in {
@@ -96,6 +99,7 @@ def load_shader_programs(semi_transparent=False):
 
 
 load_shader_programs.use_selection_fg = True
+load_shader_programs.bold_is_bright = False
 
 
 def setup_colors(screen, opts):

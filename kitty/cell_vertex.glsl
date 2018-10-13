@@ -1,7 +1,9 @@
 #version GLSL_VERSION
 #define WHICH_PROGRAM
 #define NOT_TRANSPARENT
+#define NOT_BOLD_IS_BRIGHT
 #define DECORATION_SHIFT {DECORATION_SHIFT}
+#define BOLD_SHIFT {BOLD_SHIFT}
 #define REVERSE_SHIFT {REVERSE_SHIFT}
 #define STRIKE_SHIFT {STRIKE_SHIFT}
 #define DIM_SHIFT {DIM_SHIFT}
@@ -69,6 +71,7 @@ out float effective_text_alpha;
 const uint BYTE_MASK = uint(0xFF);
 const uint Z_MASK = uint(0xFFF);
 const uint COLOR_MASK = uint(0x4000);
+const uint BRIGHT_COLORS_OFFSET = uint(8) << 8;
 const uint ZERO = uint(0);
 const uint ONE = uint(1);
 const uint TWO = uint(2);
@@ -168,7 +171,15 @@ void main() {
     colored_sprite = float((sprite_coords.z & COLOR_MASK) >> 14);
 
     // Foreground
+#ifdef BOLD_IS_BRIGHT
+    uint fg_color = colors[fg_index];
+    uint is_bold = (text_attrs >> BOLD_SHIFT) & ONE;
+    uint is_dark_fg = (fg_color & ONE) * (ONE - uint(step(8.0, float((fg_color >> 8) & BYTE_MASK))));
+    uint use_bright_fg = is_bold * is_dark_fg;
+    uint resolved_fg = resolve_color(fg_color + use_bright_fg * BRIGHT_COLORS_OFFSET, default_colors[fg_index]);
+#else
     uint resolved_fg = resolve_color(colors[fg_index], default_colors[fg_index]);
+#endif
     foreground = color_to_vec(resolved_fg);
     float has_dim = float((text_attrs >> DIM_SHIFT) & ONE);
     effective_text_alpha = inactive_text_alpha * mix(1.0, dim_opacity, has_dim);

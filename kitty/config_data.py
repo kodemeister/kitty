@@ -696,6 +696,9 @@ The foreground for text selected with the mouse. A value of none means to leave 
 o('selection_background', '#fffacd', option_type=to_color, long_text=_('''
 The background for text selected with the mouse.'''))
 
+o('bold_is_bright', False, long_text=_('''
+Draw bold text of the first 8 terminal colors in bright colors.'''))
+
 g('colors.table')
 o('color0', '#000000', long_text=_('black'), option_type=to_color)
 o('color8', '#767676', option_type=to_color)
